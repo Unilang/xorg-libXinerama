@@ -1,4 +1,4 @@
-/* $XdotOrg$ */
+/* $XdotOrg: xc/lib/Xinerama/Xinerama.c,v 1.1.4.1 2003/12/18 19:29:12 kaleb Exp $ */
 /*************************************************************************
 *
 * Copyright (c) 1999,2002 Hewlett-Packard Company
@@ -152,6 +152,12 @@ Bool XineramaActive (
     return active;
 }
 
+#ifndef XNOXINERAMABC
+Bool XineramaIsActive(Display *dpy)
+{
+    return XineramaActive(dpy, DefaultRootWindow(dpy));
+}
+#endif
 
 
 Status XineramaGetData(
@@ -207,6 +213,31 @@ Status XineramaGetData(
     SyncHandle ();
     return result;
 }
+
+#ifndef XNOXINERAMABC
+XineramaScreenInfo *XineramaQueryScreens(Display *dpy, int *number)
+{
+    XRectangle *screens = NULL;
+    if (XineramaGetData(dpy, DefaultRootWindow(dpy), &screens, number)) {
+	if (*number) {
+	    XineramaScreenInfo *scrnInfo = NULL;
+	    if ((scrnInfo = Xmalloc(sizeof(XineramaScreenInfo) * *number))) {
+		int i;
+		for (i = 0; i < *number; i++) {
+		    scrnInfo[i].screen_number = i;
+		    scrnInfo[i].x_org = screens[i].x;
+		    scrnInfo[i].y_org = screens[i].y;
+		    scrnInfo[i].width = screens[i].width;
+		    scrnInfo[i].height = screens[i].height;
+		}
+		XFree(screens);
+		return scrnInfo;
+	    }
+	}
+    }
+    return NULL;
+}
+#endif
 
 #define HINT_NAME "XINERAMA_CENTER_HINT"
 #define HINT_TYPE "INTEGER"
