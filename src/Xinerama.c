@@ -1,4 +1,4 @@
-/* $XdotOrg: xc/lib/Xinerama/Xinerama.c,v 1.1.4.1 2003/12/18 19:29:12 kaleb Exp $ */
+/* $XdotOrg: xc/lib/Xinerama/Xinerama.c,v 1.1.4.2 2003/12/29 13:38:58 kaleb Exp $ */
 /*************************************************************************
 *
 * Copyright (c) 1999,2002 Hewlett-Packard Company
@@ -238,68 +238,4 @@ XineramaScreenInfo *XineramaQueryScreens(Display *dpy, int *number)
     return NULL;
 }
 #endif
-
-#define HINT_NAME "XINERAMA_CENTER_HINT"
-#define HINT_TYPE "INTEGER"
-
-Status XineramaGetCenterHint (
-    Display *dpy,
-    Window root,
-    int *x,
-    int *y
-)
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    Atom atom, type, actual_type;
-    unsigned long nitems, bytes_after;
-    int actual_format, status;
-    short *prop;
-
-    XineramaCheckExtension (dpy, info, 0);
-
-    type = XInternAtom(dpy, HINT_TYPE, False);
-    atom = XInternAtom(dpy, HINT_NAME, True);
-
-    if(atom == None) return 0;  /* no such atom */
-
-    if( (status = XGetWindowProperty(dpy, root, atom, 0, 1, False, type, 
-				     &actual_type, &actual_format, &nitems, 
-				     &bytes_after, (unsigned char**)(&prop))) 
-	!= Success)
-	return 0;
-
-    if(actual_type == None) return 0;  /* no such property */
-
-    *x = prop[0];
-    *y = prop[1];
-
-    if (prop) XFree(prop);
-
-    return 1;
-}
-
-
-Status XineramaSetCenterHint (
-    Display *dpy,
-    Window root,
-    int x,
-    int y
-)
-{
-    XExtDisplayInfo *info = find_display (dpy);
-    Atom atom, type;
-    short data[2];
-
-    XineramaCheckExtension (dpy, info, 0);
-
-    atom = XInternAtom(dpy, HINT_NAME, False);
-    type = XInternAtom(dpy, HINT_TYPE, False);
-
-    data[0] = x;
-    data[1] = y;
-
-    return XChangeProperty(dpy, root, atom, type, 16, PropModeReplace, 
-                           (unsigned char*)data, 2);
-}
-
 
